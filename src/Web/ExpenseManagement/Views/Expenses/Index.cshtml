@@ -1,0 +1,174 @@
+﻿@model ExpenseModel
+
+<h2>Expense Management</h2>
+<div id="PlaceHolderHere"></div>
+<div class="row">
+    <div class="col-4">
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-primary" id="btnCreateExpense">
+            Add Expense
+        </button>
+
+        <button class="btn btn-info" id="expenseReportButton">Expense Report</button>
+    </div>
+    <div class="col-8">
+        <form class="d-flex justify-content-center mb-4">
+
+            <div class="form-outline me-3" style="width: 14rem">
+                <input type="text" id="title" class="form-control" />
+            </div>
+
+            <button type="button" class="btn btn-primary">Button</button>
+
+        </form>
+    </div>
+</div>
+
+<table class="table table-bordered table-hover table-striped">
+    <thead>
+    <th>Title</th>
+    <th>Price</th>
+    <th>Purchase Date</th>
+    <th>Category</th>
+    <th>Actions</th>
+    </thead>
+    <tbody id="expenseTable">
+    </tbody>
+</table>
+
+
+<!-- Modal -->
+<div class="modal fade" data-bs-keyboard="false" data-bs-backdrop="static" id="addExpense" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Add Expense</h1>
+                <button type="button" class="btn-close" onclick="hideModal()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="Create">
+                    <input hidden asp-for="Id" type="number" value="0" />
+                    <div class="form-group">
+                        <label asp-for="Title">Title</label>
+                        <input asp-for="Title" class="form-control" placeholder="Enter Title">
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="MoneySpent">Money Spent</label>
+                        <input asp-for="MoneySpent" class="form-control" type="number">
+                        <span asp-validation-for="MoneySpent" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ExpenseDate">Expense Date</label>
+                        <input asp-for="ExpenseDate" class="form-control" type="date">
+                        <span asp-validation-for="ExpenseDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Category">Category</label>
+                        <input asp-for="Category" class="form-control" placeholder="Enter Category">
+                        <span asp-validation-for="Category" class="text-danger"></span>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="hideModal()">Close</button>
+                <button type="button" class="btn btn-primary" id="create" onclick="create()">Create</button>
+                <button type="button" class="btn btn-success" style="display:none" data-bs-dismiss="modal" id="update" onclick="update()">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" data-bs-keyboard="false" data-bs-backdrop="static" id="expenseReport" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Expense Report</h1>
+                <button type="button" class="btn-close" onclick="hideModal()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <canvas id="expenseChart"></canvas>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="~/js/expense.js"></script>
+
+    <script>
+
+        $('#expenseReportButton').on('click', function () {
+            $('#expenseReport').modal('show');
+            loadExpenseReport();
+        })
+
+        function loadExpenseReport() {
+            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            $.ajax({
+                url: "Expenses/GetExpenses",
+                type: "get",
+                contentType: "application/json;charset=utf-8",
+                datatype: "json",
+                success: onSuccess,
+                error: function () {
+                    toastr.error('Unable to load expenses!');
+                }
+            })
+            onSuccess();
+        }
+
+        function onSuccess() {
+            let myChart = null;
+            const barChat = document.getElementById('expenseChart');
+     
+            var _data = [12, 19, 3, 5, 2000, 122, 300];
+            var _lebels = ["Jan", "Feb", "Mar", "Apr", "June", "July", "Aug"];
+            var colers = ['Red', 'Blue', 'Green', 'Yellow', 'Purple', "Orange", "Pink"];
+
+            // new Chart(barChat, {
+            //     type: 'bar',
+            //     data: {
+            //         labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+            //         datasets: [{
+            //             label: '# of Votes',
+            //             data: [12, 19, 3, 5, 2, 3],
+            //             borderWidth: 1
+            //         }]
+            //     },
+            //     options: {
+            //         scales: {
+            //             y: {
+            //                 beginAtZero: true
+            //             }
+            //         }
+            //     }
+            // });
+
+
+
+            myChart = new Chart(barChat, {
+                type: 'bar',
+                data: {
+                    labels: _lebels,
+                    datasets: [{
+                        backgroudColor: colers,
+                        data: _data,
+                        borderWidth: 1
+                    }]
+                }
+            })
+
+        }
+    </script>
+
+}

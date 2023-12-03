@@ -1,0 +1,58 @@
+https://www.youtube.com/watch?v=8RA2abuUORM
+https://www.twilio.com/blog/containerize-your-aspdotnet-core-application-and-sql-server-with-docker
+
+
+Build Docker image:     docker build -t expenseapp -f "src/Web/ExpenseManagement/Dockerfine" .
+docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Kamol9943' -p 1433:1433 -d --name sql1 --hostname sql1 -d mcr.microsoft.com/mssql/server:2022-latest
+
+
+
+ version: '3.4'
+
+networks:
+  demoapp: 
+
+services:
+  demoappdb:
+    container_name: mssql
+    image: mcr.microsoft.com/mssql/server
+    ports: 
+        - 1433:1433
+    environment:
+       - ACCEPT_EULA=Y = Y
+       - MSSQL_SA_PASSWORD = Kamol9943
+    networks:
+       - demoapp
+  expensemanagement:
+    container_name: demoapp
+    image: ${DOCKER_REGISTRY-}expensemanagement
+    build:
+      context: .
+      dockerfile: src/Web/ExpenseManagement/Dockerfile
+    ports:
+        - 8001:80
+    depends_on:
+        - demoappdb
+    environment:
+        - DB_HOST= localhost
+        - DB_NAME = ExpenseDB
+        - DB_SA_PASSWORD = Kamol9943 
+    networks:
+     - demoapp
+  
+
+  version: "3.4"
+services:
+  web_app:
+      image: expenseapp
+      container_name: web_application      
+      ports:
+        - "8080:80"
+  sql:
+      image: mcr.microsoft.com/mssql/server:2022-latest
+      container_name: sql_server
+      ports:
+        - "1433:1433"
+      environment:
+          - ACCEPT_EULA=Y
+          - SA_PASSWORD=Kamol9943
